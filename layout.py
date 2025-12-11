@@ -3,7 +3,8 @@
 # ============================================================================
 
 import tkinter as tk
-from ui import *
+from ui import ScrollableFrame, SearchBar, SidebarButton
+from theme import Theme
 
 
 class MainLayout:
@@ -24,13 +25,13 @@ class MainLayout:
     
     def setup_window(self):
         """Configure the main window"""
-        self.root.title("Unified Control Panel")
-        self.root.geometry("1200x800")
-        self.root.configure(bg=UITheme.BG_DARK)
+        self.root.title(Theme.WINDOW_TITLE)
+        self.root.geometry(f"{Theme.WINDOW_WIDTH}x{Theme.WINDOW_HEIGHT}")
+        self.root.configure(bg=Theme.BG_DARK)
         
         # Try to set icon
         try:
-            self.root.iconbitmap('default')
+            self.root.iconbitmap(Theme.WINDOW_ICON)
         except:
             pass
     
@@ -41,36 +42,38 @@ class MainLayout:
     
     def create_header(self):
         """Create the header with title and search bar"""
-        header = tk.Frame(self.root, bg=UITheme.BG_DARKER, height=80)
+        header = tk.Frame(self.root, bg=Theme.BG_DARKER, height=Theme.HEADER_HEIGHT)
         header.pack(fill=tk.X, side=tk.TOP)
         header.pack_propagate(False)
         
         title = tk.Label(
             header,
-            text="⚙️ Unified Control Panel",
-            font=("Segoe UI", 20, "bold"),
-            bg=UITheme.BG_DARKER,
-            fg=UITheme.TEXT_PRIMARY
+            text=Theme.APP_TITLE,
+            font=Theme.FONT_TITLE,
+            bg=Theme.BG_DARKER,
+            fg=Theme.TEXT_PRIMARY
         )
-        title.pack(side=tk.LEFT, padx=20, pady=20)
+        title.pack(side=tk.LEFT, padx=Theme.HEADER_PADDING_X, pady=Theme.HEADER_PADDING_Y)
         
         version = tk.Label(
             header,
-            text="v2.0 Modular",
-            font=("Segoe UI", 9),
-            bg=UITheme.BG_DARKER,
-            fg=UITheme.TEXT_SECONDARY
+            text=Theme.APP_VERSION,
+            font=Theme.FONT_VERSION,
+            bg=Theme.BG_DARKER,
+            fg=Theme.TEXT_SECONDARY
         )
-        version.pack(side=tk.LEFT, padx=5, pady=20)
+        version.pack(side=tk.LEFT, padx=Theme.VERSION_PADDING_X, pady=Theme.HEADER_PADDING_Y)
         
         # Search bar
         search_bar = SearchBar(header, on_search=self.on_search_callback)
-        search_bar.pack(side=tk.RIGHT, padx=20)
+        search_bar.pack(side=tk.RIGHT, padx=Theme.HEADER_PADDING_X)
     
     def create_main_container(self):
         """Create the main container with sidebar and content area"""
-        main_container = tk.Frame(self.root, bg=UITheme.BG_DARK)
-        main_container.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
+        main_container = tk.Frame(self.root, bg=Theme.BG_DARK)
+        main_container.pack(fill=tk.BOTH, expand=True, 
+                          padx=Theme.MAIN_CONTAINER_PADDING, 
+                          pady=Theme.MAIN_CONTAINER_PADDING)
         
         # Sidebar
         self.sidebar = self.create_sidebar(main_container)
@@ -82,18 +85,20 @@ class MainLayout:
     
     def create_sidebar(self, parent):
         """Create the category sidebar"""
-        sidebar = tk.Frame(parent, bg=UITheme.BG_DARKER, width=250)
-        sidebar.pack(side=tk.LEFT, fill=tk.Y, padx=(0, 20))
+        sidebar = tk.Frame(parent, bg=Theme.BG_DARKER, width=Theme.SIDEBAR_WIDTH)
+        sidebar.pack(side=tk.LEFT, fill=tk.Y, padx=(0, Theme.SIDEBAR_PADDING_RIGHT))
         sidebar.pack_propagate(False)
         
         sidebar_title = tk.Label(
             sidebar,
-            text="CATEGORIES",
-            font=("Segoe UI", 9, "bold"),
-            bg=UITheme.BG_DARKER,
-            fg=UITheme.TEXT_SECONDARY
+            text=Theme.SIDEBAR_TITLE,
+            font=Theme.FONT_CATEGORY,
+            bg=Theme.BG_DARKER,
+            fg=Theme.TEXT_SECONDARY
         )
-        sidebar_title.pack(pady=(10, 15), padx=20, anchor="w")
+        sidebar_title.pack(pady=Theme.SIDEBAR_TITLE_PADDING_Y, 
+                          padx=Theme.SIDEBAR_TITLE_PADDING_X, 
+                          anchor="w")
         
         return sidebar
     
@@ -104,7 +109,9 @@ class MainLayout:
             text=f"{module_icon} {module_name}",
             command=command
         )
-        btn.pack(fill=tk.X, pady=2, padx=5)
+        btn.pack(fill=tk.X, 
+                pady=Theme.SIDEBAR_BUTTON_PADDING_Y, 
+                padx=Theme.SIDEBAR_BUTTON_PADDING_X)
         self.sidebar_buttons[module_name] = btn
         return btn
     
@@ -120,40 +127,40 @@ class MainLayout:
     
     def create_module_header(self, module_icon, module_name, settings_count):
         """Create a header for a module view"""
-        header = tk.Frame(self.content_frame, bg=UITheme.BG_DARK)
-        header.pack(fill=tk.X, pady=(0, 20))
+        header = tk.Frame(self.content_frame, bg=Theme.BG_DARK)
+        header.pack(fill=tk.X, pady=Theme.CONTENT_MODULE_HEADER_PADDING_Y)
         
         title = tk.Label(
             header,
             text=f"{module_icon} {module_name}",
-            font=("Segoe UI", 24, "bold"),
-            bg=UITheme.BG_DARK,
-            fg=UITheme.TEXT_PRIMARY
+            font=Theme.FONT_MODULE_HEADER,
+            bg=Theme.BG_DARK,
+            fg=Theme.TEXT_PRIMARY
         )
         title.pack(anchor="w")
         
         subtitle = tk.Label(
             header,
-            text=f"{settings_count} settings available",
-            font=("Segoe UI", 10),
-            bg=UITheme.BG_DARK,
-            fg=UITheme.TEXT_SECONDARY
+            text=Theme.settings_count_text(settings_count),
+            font=Theme.FONT_MODULE_SUBTITLE,
+            bg=Theme.BG_DARK,
+            fg=Theme.TEXT_SECONDARY
         )
-        subtitle.pack(anchor="w", pady=(5, 0))
+        subtitle.pack(anchor="w", pady=Theme.CONTENT_MODULE_SUBTITLE_PADDING_Y)
         
         return header
     
     def create_search_header(self, query):
         """Create a header for search results"""
-        header_frame = tk.Frame(self.content_frame, bg=UITheme.BG_DARK)
-        header_frame.pack(fill=tk.X, pady=(0, 20))
+        header_frame = tk.Frame(self.content_frame, bg=Theme.BG_DARK)
+        header_frame.pack(fill=tk.X, pady=Theme.CONTENT_SEARCH_HEADER_PADDING_Y)
         
         header = tk.Label(
             header_frame,
-            text=f"🔍 Search results for: \"{query}\"",
-            font=("Segoe UI", 20, "bold"),
-            bg=UITheme.BG_DARK,
-            fg=UITheme.TEXT_PRIMARY
+            text=Theme.search_results_text(query),
+            font=Theme.FONT_SEARCH_HEADER,
+            bg=Theme.BG_DARK,
+            fg=Theme.TEXT_PRIMARY
         )
         header.pack(anchor="w")
         
@@ -163,16 +170,16 @@ class MainLayout:
         """Display a 'no results found' message"""
         no_results = tk.Label(
             self.content_frame,
-            text="No settings found matching your search",
-            font=("Segoe UI", 14),
-            bg=UITheme.BG_DARK,
-            fg=UITheme.TEXT_SECONDARY
+            text=Theme.NO_RESULTS_MESSAGE,
+            font=Theme.FONT_NO_RESULTS,
+            bg=Theme.BG_DARK,
+            fg=Theme.TEXT_SECONDARY
         )
-        no_results.pack(pady=50)
+        no_results.pack(pady=Theme.CONTENT_NO_RESULTS_PADDING_Y)
     
     def add_setting_card(self, card):
         """Add a setting card to the content area"""
-        card.pack(fill=tk.X, pady=5)
+        card.pack(fill=tk.X, pady=Theme.CONTENT_CARD_PADDING_Y)
     
     def get_content_frame(self):
         """Get the content frame for direct widget manipulation"""

@@ -1,27 +1,26 @@
 import tkinter as tk
-from tkinter import ttk
-from typing import Callable, Optional, Dict, Any
+from typing import Callable
+from theme import Theme
 
-from .ui_theme import *
 
 class ModernButton(tk.Button):
     """Modern styled button with hover effects"""
     
     def __init__(self, parent, text: str, command: Callable, 
-                 color: str = UITheme.COLORS["blue"], **kwargs):
+                 color: str = Theme.ACCENT_BLUE, **kwargs):
         super().__init__(
             parent,
             text=text,
             command=command,
-            font=("Segoe UI", 10, "bold"),
+            font=Theme.FONT_BUTTON,
             bg=color,
-            fg="white",
+            fg=Theme.TEXT_PRIMARY,
             activebackground=color,
-            activeforeground="white",
+            activeforeground=Theme.TEXT_PRIMARY,
             relief=tk.FLAT,
-            cursor="hand2",
-            bd=0,
-            padx=20,
-            pady=8,
+            cursor=Theme.BUTTON_CURSOR,
+            bd=Theme.BUTTON_BORDER_WIDTH,
+            padx=Theme.BUTTON_PADDING_X,
+            pady=Theme.BUTTON_PADDING_Y,
             **kwargs
         )

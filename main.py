@@ -4,13 +4,11 @@
 
 import subprocess
 from tkinter import messagebox
-from pathlib import Path
-import json
 import traceback
 import os
 import tkinter as tk
 
-from ui import SettingCard, UITheme
+from ui import SettingCard
 from modules import *
 from layout import MainLayout
 
@@ -20,10 +18,6 @@ class UnifiedControlPanel:
     
     def __init__(self, root):
         self.root = root
-        
-        # Load configuration
-        self.config_file = Path.home() / ".unified_control_panel" / "config.json"
-        self.load_config()
         
         # Load all modules
         self.modules = self.load_modules()
@@ -59,28 +53,6 @@ class UnifiedControlPanel:
             modules[module.get_name()] = module
         
         return modules
-    
-    def load_config(self):
-        """Load or create configuration file"""
-        try:
-            self.config_file.parent.mkdir(exist_ok=True)
-            if self.config_file.exists():
-                with open(self.config_file, 'r') as f:
-                    self.config = json.load(f)
-            else:
-                self.config = {"favorites": [], "theme": "dark"}
-                self.save_config()
-        except Exception as e:
-            print(f"Config load error: {e}")
-            self.config = {"favorites": [], "theme": "dark"}
-    
-    def save_config(self):
-        """Save configuration to file"""
-        try:
-            with open(self.config_file, 'w') as f:
-                json.dump(self.config, f, indent=2)
-        except Exception as e:
-            print(f"Config save error: {e}")
     
     def build_sidebar(self):
         """Build the category sidebar with module buttons"""
@@ -199,3 +171,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    

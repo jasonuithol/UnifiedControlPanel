@@ -1,19 +1,18 @@
 import tkinter as tk
 from tkinter import ttk
-from typing import Callable, Optional, Dict, Any
+from theme import Theme
 
-from .ui_theme import *
 
 class ScrollableFrame(tk.Frame):
     """Frame with scrollbar support"""
     
     def __init__(self, parent, **kwargs):
-        super().__init__(parent, bg=UITheme.BG_DARK, **kwargs)
+        super().__init__(parent, bg=Theme.BG_DARK, **kwargs)
         
         # Create canvas and scrollbar
         self.canvas = tk.Canvas(
             self,
-            bg=UITheme.BG_DARK,
+            bg=Theme.BG_DARK,
             highlightthickness=0
         )
         self.scrollbar = ttk.Scrollbar(
@@ -23,7 +22,7 @@ class ScrollableFrame(tk.Frame):
         )
         
         # Create the scrollable frame
-        self.scrollable_frame = tk.Frame(self.canvas, bg=UITheme.BG_DARK)
+        self.scrollable_frame = tk.Frame(self.canvas, bg=Theme.BG_DARK)
         
         self.canvas.configure(yscrollcommand=self.scrollbar.set)
         
