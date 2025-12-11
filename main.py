@@ -154,7 +154,17 @@ class UnifiedControlPanel:
             )
             btn.pack(fill=tk.X, pady=2, padx=5)
             self.sidebar_buttons[module_name] = btn
-    
+
+    def build_card(self, module: BaseModule, setting: ModuleSetting) -> SettingCard:
+        card = SettingCard(
+            self.content_frame,
+            name=setting.name,
+            description=f"{setting.description} ({setting.command})",
+            command=lambda s=setting: self.execute_command(s),
+            color=module.get_color()
+        )
+        return card
+
     def show_module(self, module_name: str):
         """Display settings for a specific module"""
         self.active_module = module_name
@@ -194,13 +204,7 @@ class UnifiedControlPanel:
         
         # Settings cards
         for setting in settings:
-            card = SettingCard(
-                self.content_frame,
-                name=setting.name,
-                description=setting.description,
-                command=lambda s=setting: self.execute_command(s),
-                color=module.get_color()
-            )
+            card = self.build_card(module, setting)
             card.pack(fill=tk.X, pady=5)
     
     def execute_command(self, setting: ModuleSetting):
@@ -257,14 +261,9 @@ class UnifiedControlPanel:
         for module_name, module in self.modules.items():
             for setting in module.get_settings():
                 if (query in setting.name.lower() or 
-                    query in setting.description.lower()):
-                    card = SettingCard(
-                        self.content_frame,
-                        name=setting.name,
-                        description=setting.description,
-                        command=lambda s=setting: self.execute_command(s),
-                        color=module.get_color()
-                    )
+                    query in setting.description.lower() or
+                    query in setting.command):
+                    card = self.build_card(module, setting)
                     card.pack(fill=tk.X, pady=5)
                     found = True
         
