@@ -9,18 +9,10 @@ import json
 #import sys
 import traceback
 
-from general_ui          import *
-from modules.base_module import *
 
-from modules.accounts        import *
-from modules.apps            import *
-from modules.devices         import *
-from modules.network         import *
-from modules.personalization import *
-from modules.security        import *
-from modules.services        import *
-from modules.storage         import *
-from modules.system          import *
+from ui import *
+from modules import *
+
 
 class UnifiedControlPanel:
     """Main application class"""
