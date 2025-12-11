@@ -8,7 +8,7 @@ from pathlib import Path
 import json
 #import sys
 import traceback
-
+import os
 
 from ui import *
 from modules import *
@@ -149,7 +149,7 @@ class UnifiedControlPanel:
         for module_name, module in self.modules.items():
             btn = SidebarButton(
                 self.sidebar,
-                text=f"{module.get_icon()}  {module_name}",
+                text=f"{module.get_icon()} {module_name}",
                 command=lambda name=module_name: self.show_module(name)
             )
             btn.pack(fill=tk.X, pady=2, padx=5)
@@ -208,10 +208,17 @@ class UnifiedControlPanel:
         print(f"Executing: {setting.command}")
         try:
             cmd = setting.command
-            if cmd.startswith("ms-settings:") or cmd == "windowsdefender:":
+
+            if '%' in cmd:
+                cmd = os.path.expandvars(cmd)
+    
+            if cmd.startswith("shell:"):
+                subprocess.Popen(['explorer', cmd], shell=True)
+            elif cmd.startswith("ms-settings:") or cmd == "windowsdefender:":
                 subprocess.Popen(["start", cmd], shell=True)
             else:
                 subprocess.Popen(cmd, shell=True)
+
             print(f"Command executed successfully: {setting.name}")
         except Exception as e:
             print(f"Error executing {setting.name}: {e}")

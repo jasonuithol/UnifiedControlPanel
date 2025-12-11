@@ -23,7 +23,6 @@ class SystemModule(BaseModule):
             ModuleSetting("Power Options", "Manage power plans", "powercfg.cpl"),
             ModuleSetting("Advanced System", "System properties", "sysdm.cpl"),
             ModuleSetting("Device Manager", "Manage hardware devices", "devmgmt.msc"),
-            ModuleSetting("Disk Cleanup", "Free up disk space", "cleanmgr"),
             ModuleSetting("Performance Monitor", "Monitor system performance", "perfmon"),
         ]
 
