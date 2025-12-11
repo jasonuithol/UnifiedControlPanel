@@ -6,28 +6,20 @@ import subprocess
 from tkinter import messagebox
 from pathlib import Path
 import json
-#import sys
 import traceback
 import os
+import tkinter as tk
 
-from ui import *
+from ui import SettingCard, UITheme
 from modules import *
+from layout import MainLayout
 
 
 class UnifiedControlPanel:
-    """Main application class"""
+    """Main application class - handles business logic and coordination"""
     
     def __init__(self, root):
         self.root = root
-        self.root.title("Unified Control Panel")
-        self.root.geometry("1200x800")
-        self.root.configure(bg=UITheme.BG_DARK)
-        
-        # Try to set icon
-        try:
-            self.root.iconbitmap('default')
-        except:
-            pass
         
         # Load configuration
         self.config_file = Path.home() / ".unified_control_panel" / "config.json"
@@ -36,8 +28,14 @@ class UnifiedControlPanel:
         # Load all modules
         self.modules = self.load_modules()
         
-        # Create UI
-        self.create_ui()
+        # Create UI layout
+        self.layout = MainLayout(root, on_search_callback=self.on_search)
+        
+        # Build sidebar with module buttons
+        self.build_sidebar()
+        
+        # Show default module
+        self.show_module("System")
         
         print("UI initialized successfully!")
     
@@ -84,128 +82,50 @@ class UnifiedControlPanel:
         except Exception as e:
             print(f"Config save error: {e}")
     
-    def create_ui(self):
-        """Create the main user interface"""
-        # Header
-        header = tk.Frame(self.root, bg=UITheme.BG_DARKER, height=80)
-        header.pack(fill=tk.X, side=tk.TOP)
-        header.pack_propagate(False)
-        
-        title = tk.Label(
-            header,
-            text="⚙️ Unified Control Panel",
-            font=("Segoe UI", 20, "bold"),
-            bg=UITheme.BG_DARKER,
-            fg=UITheme.TEXT_PRIMARY
-        )
-        title.pack(side=tk.LEFT, padx=20, pady=20)
-        
-        version = tk.Label(
-            header,
-            text="v2.0 Modular",
-            font=("Segoe UI", 9),
-            bg=UITheme.BG_DARKER,
-            fg=UITheme.TEXT_SECONDARY
-        )
-        version.pack(side=tk.LEFT, padx=5, pady=20)
-        
-        # Search bar
-        search_bar = SearchBar(header, on_search=self.on_search)
-        search_bar.pack(side=tk.RIGHT, padx=20)
-        
-        # Main container
-        main_container = tk.Frame(self.root, bg=UITheme.BG_DARK)
-        main_container.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
-        
-        # Sidebar
-        self.sidebar = tk.Frame(main_container, bg=UITheme.BG_DARKER, width=250)
-        self.sidebar.pack(side=tk.LEFT, fill=tk.Y, padx=(0, 20))
-        self.sidebar.pack_propagate(False)
-        
-        sidebar_title = tk.Label(
-            self.sidebar,
-            text="CATEGORIES",
-            font=("Segoe UI", 9, "bold"),
-            bg=UITheme.BG_DARKER,
-            fg=UITheme.TEXT_SECONDARY
-        )
-        sidebar_title.pack(pady=(10, 15), padx=20, anchor="w")
-        
-        # Content area
-        self.scroll_frame = ScrollableFrame(main_container)
-        self.scroll_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-        self.content_frame = self.scroll_frame.get_frame()
-        
-        # Build sidebar
-        self.build_sidebar()
-        
-        # Show default module
-        self.show_module("System")
-    
     def build_sidebar(self):
-        """Build the category sidebar"""
-        self.sidebar_buttons = {}
-        
+        """Build the category sidebar with module buttons"""
         for module_name, module in self.modules.items():
-            btn = SidebarButton(
-                self.sidebar,
-                text=f"{module.get_icon()} {module_name}",
+            self.layout.add_sidebar_button(
+                module_name=module_name,
+                module_icon=module.get_icon(),
                 command=lambda name=module_name: self.show_module(name)
             )
-            btn.pack(fill=tk.X, pady=2, padx=5)
-            self.sidebar_buttons[module_name] = btn
-
+    
     def build_card(self, module: BaseModule, setting: ModuleSetting) -> SettingCard:
+        """Build a setting card for display"""
         card = SettingCard(
-            self.content_frame,
+            self.layout.get_content_frame(),
             name=setting.name,
             description=f"{setting.description} ({setting.command})",
             command=lambda s=setting: self.execute_command(s),
             color=module.get_color()
         )
         return card
-
+    
     def show_module(self, module_name: str):
         """Display settings for a specific module"""
         self.active_module = module_name
         
-        # Update sidebar button states
-        for name, btn in self.sidebar_buttons.items():
-            btn.set_active(name == module_name)
+        # Update sidebar
+        self.layout.set_active_sidebar_button(module_name)
         
-        # Clear content frame
-        for widget in self.content_frame.winfo_children():
-            widget.destroy()
+        # Clear and rebuild content
+        self.layout.clear_content()
         
         module = self.modules[module_name]
-        
-        # Module header
-        header = tk.Frame(self.content_frame, bg=UITheme.BG_DARK)
-        header.pack(fill=tk.X, pady=(0, 20))
-        
-        title = tk.Label(
-            header,
-            text=f"{module.get_icon()} {module_name}",
-            font=("Segoe UI", 24, "bold"),
-            bg=UITheme.BG_DARK,
-            fg=UITheme.TEXT_PRIMARY
-        )
-        title.pack(anchor="w")
-        
         settings = module.get_settings()
-        subtitle = tk.Label(
-            header,
-            text=f"{len(settings)} settings available",
-            font=("Segoe UI", 10),
-            bg=UITheme.BG_DARK,
-            fg=UITheme.TEXT_SECONDARY
-        )
-        subtitle.pack(anchor="w", pady=(5, 0))
         
-        # Settings cards
+        # Create header
+        self.layout.create_module_header(
+            module_icon=module.get_icon(),
+            module_name=module_name,
+            settings_count=len(settings)
+        )
+        
+        # Add setting cards
         for setting in settings:
             card = self.build_card(module, setting)
-            card.pack(fill=tk.X, pady=5)
+            self.layout.add_setting_card(card)
     
     def execute_command(self, setting: ModuleSetting):
         """Execute a control panel command"""
@@ -232,6 +152,7 @@ class UnifiedControlPanel:
         """Filter settings based on search query"""
         query = query.lower().strip()
         
+        # If empty query, show active module
         if not query:
             if hasattr(self, 'active_module'):
                 self.show_module(self.active_module)
@@ -239,22 +160,9 @@ class UnifiedControlPanel:
                 self.show_module("System")
             return
         
-        # Clear content
-        for widget in self.content_frame.winfo_children():
-            widget.destroy()
-        
-        # Search header
-        header_frame = tk.Frame(self.content_frame, bg=UITheme.BG_DARK)
-        header_frame.pack(fill=tk.X, pady=(0, 20))
-        
-        header = tk.Label(
-            header_frame,
-            text=f"🔍 Search results for: \"{query}\"",
-            font=("Segoe UI", 20, "bold"),
-            bg=UITheme.BG_DARK,
-            fg=UITheme.TEXT_PRIMARY
-        )
-        header.pack(anchor="w")
+        # Clear content and show search header
+        self.layout.clear_content()
+        self.layout.create_search_header(query)
         
         # Search through all modules
         found = False
@@ -264,18 +172,12 @@ class UnifiedControlPanel:
                     query in setting.description.lower() or
                     query in setting.command):
                     card = self.build_card(module, setting)
-                    card.pack(fill=tk.X, pady=5)
+                    self.layout.add_setting_card(card)
                     found = True
         
+        # Show no results message if nothing found
         if not found:
-            no_results = tk.Label(
-                self.content_frame,
-                text="No settings found matching your search",
-                font=("Segoe UI", 14),
-                bg=UITheme.BG_DARK,
-                fg=UITheme.TEXT_SECONDARY
-            )
-            no_results.pack(pady=50)
+            self.layout.show_no_results_message()
 
 
 def main():
