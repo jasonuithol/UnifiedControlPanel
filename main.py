@@ -11,6 +11,7 @@ import tkinter as tk
 from ui import SettingCard
 from modules import *
 from layout import MainLayout
+from zoom_manager import ZoomManager
 
 
 class UnifiedControlPanel:
@@ -19,11 +20,14 @@ class UnifiedControlPanel:
     def __init__(self, root):
         self.root = root
         
+        # Initialize zoom manager
+        self.zoom_manager = ZoomManager(root)
+        
         # Load all modules
         self.modules = self.load_modules()
         
         # Create UI layout
-        self.layout = MainLayout(root, on_search_callback=self.on_search)
+        self.layout = MainLayout(root, on_search_callback=self.on_search, zoom_manager=self.zoom_manager)
         
         # Build sidebar with module buttons
         self.build_sidebar()
@@ -32,6 +36,7 @@ class UnifiedControlPanel:
         self.show_module("System")
         
         print("UI initialized successfully!")
+        print("Tip: Use Ctrl+MouseWheel to zoom, Ctrl+0 to reset")
     
     def load_modules(self) -> Dict[str, BaseModule]:
         """Load all module instances"""
@@ -56,15 +61,21 @@ class UnifiedControlPanel:
     
     def build_sidebar(self):
         """Build the category sidebar with module buttons"""
+        from theme import Theme
+        
         for module_name, module in self.modules.items():
-            self.layout.add_sidebar_button(
+            btn = self.layout.add_sidebar_button(
                 module_name=module_name,
                 module_icon=module.get_icon(),
                 command=lambda name=module_name: self.show_module(name)
             )
+            # Register button with zoom manager
+            self.zoom_manager.register_widget(btn, Theme.FONT_SIDEBAR_BUTTON)
     
     def build_card(self, module: BaseModule, setting: ModuleSetting) -> SettingCard:
         """Build a setting card for display"""
+        from theme import Theme
+        
         card = SettingCard(
             self.layout.get_content_frame(),
             name=setting.name,
@@ -72,6 +83,12 @@ class UnifiedControlPanel:
             command=lambda s=setting: self.execute_command(s),
             color=module.get_color()
         )
+        
+        # Register card labels with zoom manager
+        if hasattr(card, 'name_label') and hasattr(card, 'desc_label'):
+            self.zoom_manager.register_widget(card.name_label, Theme.FONT_CARD_NAME)
+            self.zoom_manager.register_widget(card.desc_label, Theme.FONT_CARD_DESCRIPTION)
+        
         return card
     
     def show_module(self, module_name: str):
@@ -171,4 +188,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    

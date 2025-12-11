@@ -5,14 +5,16 @@
 import tkinter as tk
 from ui import ScrollableFrame, SearchBar, SidebarButton
 from theme import Theme
+from typing import Optional
 
 
 class MainLayout:
     """Handles all UI layout construction for the application"""
     
-    def __init__(self, root, on_search_callback):
+    def __init__(self, root, on_search_callback, zoom_manager=None):
         self.root = root
         self.on_search_callback = on_search_callback
+        self.zoom_manager = zoom_manager
         
         # UI component references
         self.sidebar = None
@@ -54,6 +56,8 @@ class MainLayout:
             fg=Theme.TEXT_PRIMARY
         )
         title.pack(side=tk.LEFT, padx=Theme.HEADER_PADDING_X, pady=Theme.HEADER_PADDING_Y)
+        if self.zoom_manager:
+            self.zoom_manager.register_widget(title, Theme.FONT_TITLE)
         
         version = tk.Label(
             header,
@@ -63,6 +67,8 @@ class MainLayout:
             fg=Theme.TEXT_SECONDARY
         )
         version.pack(side=tk.LEFT, padx=Theme.VERSION_PADDING_X, pady=Theme.HEADER_PADDING_Y)
+        if self.zoom_manager:
+            self.zoom_manager.register_widget(version, Theme.FONT_VERSION)
         
         # Search bar
         search_bar = SearchBar(header, on_search=self.on_search_callback)
@@ -99,6 +105,8 @@ class MainLayout:
         sidebar_title.pack(pady=Theme.SIDEBAR_TITLE_PADDING_Y, 
                           padx=Theme.SIDEBAR_TITLE_PADDING_X, 
                           anchor="w")
+        if self.zoom_manager:
+            self.zoom_manager.register_widget(sidebar_title, Theme.FONT_CATEGORY)
         
         return sidebar
     
@@ -138,6 +146,8 @@ class MainLayout:
             fg=Theme.TEXT_PRIMARY
         )
         title.pack(anchor="w")
+        if self.zoom_manager:
+            self.zoom_manager.register_widget(title, Theme.FONT_MODULE_HEADER)
         
         subtitle = tk.Label(
             header,
@@ -147,6 +157,8 @@ class MainLayout:
             fg=Theme.TEXT_SECONDARY
         )
         subtitle.pack(anchor="w", pady=Theme.CONTENT_MODULE_SUBTITLE_PADDING_Y)
+        if self.zoom_manager:
+            self.zoom_manager.register_widget(subtitle, Theme.FONT_MODULE_SUBTITLE)
         
         return header
     
@@ -163,6 +175,8 @@ class MainLayout:
             fg=Theme.TEXT_PRIMARY
         )
         header.pack(anchor="w")
+        if self.zoom_manager:
+            self.zoom_manager.register_widget(header, Theme.FONT_SEARCH_HEADER)
         
         return header_frame
     
@@ -176,6 +190,8 @@ class MainLayout:
             fg=Theme.TEXT_SECONDARY
         )
         no_results.pack(pady=Theme.CONTENT_NO_RESULTS_PADDING_Y)
+        if self.zoom_manager:
+            self.zoom_manager.register_widget(no_results, Theme.FONT_NO_RESULTS)
     
     def add_setting_card(self, card):
         """Add a setting card to the content area"""

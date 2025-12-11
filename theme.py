@@ -117,3 +117,40 @@ class Theme:
     def search_results_text(query: str) -> str:
         """Generate search results header text"""
         return f"🔍 Search results for: \"{query}\""
+    
+    # ========================================================================
+    # ZOOM CONFIGURATION
+    # ========================================================================
+    ZOOM_MIN = 0.5   # 50% minimum zoom
+    ZOOM_MAX = 2.0   # 200% maximum zoom
+    ZOOM_STEP = 0.1  # 10% per scroll
+    
+    _zoom_level = 1.0  # Current zoom level (1.0 = 100%)
+    
+    @classmethod
+    def get_zoom_level(cls) -> float:
+        """Get current zoom level"""
+        return cls._zoom_level
+    
+    @classmethod
+    def set_zoom_level(cls, level: float):
+        """Set zoom level (clamped to min/max)"""
+        cls._zoom_level = max(cls.ZOOM_MIN, min(cls.ZOOM_MAX, level))
+    
+    @classmethod
+    def zoom_in(cls):
+        """Increase zoom level"""
+        cls.set_zoom_level(cls._zoom_level + cls.ZOOM_STEP)
+    
+    @classmethod
+    def zoom_out(cls):
+        """Decrease zoom level"""
+        cls.set_zoom_level(cls._zoom_level - cls.ZOOM_STEP)
+    
+    @classmethod
+    def scale_font(cls, base_font: tuple) -> tuple:
+        """Scale a font tuple by current zoom level"""
+        family = base_font[0]
+        size = int(base_font[1] * cls._zoom_level)
+        weight = base_font[2] if len(base_font) > 2 else ""
+        return (family, size, weight) if weight else (family, size)
